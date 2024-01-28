@@ -91,16 +91,16 @@ impl Beach {
      * Return `None` if there are no clear winners between two different existing clans. If the inputs are invalid, return an Err string.
      */
     pub fn get_winner_clan(&self, id1: &str, id2: &str) -> Result<Option<String>, String> {
-        let clans1 = self.clan_system.get_clan_member_names(id1);
-        if clans1.is_empty() {
+        let clan1 = self.clan_system.get_clan_member_names(id1);
+        if clan1.is_empty() {
             return Err(format!("No clan named {}", id1));
         }
-        let clans2 = self.clan_system.get_clan_member_names(id2);
-        if clans2.is_empty() {
+        let clan2 = self.clan_system.get_clan_member_names(id2);
+        if clan2.is_empty() {
             return Err(format!("No clan named {}", id2));
         }
-        let avg1 = self.get_crabs_avg_speed(&clans1);
-        let avg2 = self.get_crabs_avg_speed(&clans2);
+        let avg1 = self.get_crabs_avg_speed(&clan1);
+        let avg2 = self.get_crabs_avg_speed(&clan2);
         return if avg1 == avg2 {
             Ok(None)
         } else if avg1 > avg2 {
@@ -111,11 +111,17 @@ impl Beach {
     }
 
     pub fn get_crabs_avg_speed(&self, names: &Vec<String>) -> u32 {
-        let speed_values: Vec<u32> = names.iter().map(|n| self.find_crabs_by_name(n).first().unwrap().speed()).collect();
-        let cnt = u32::try_from(names.len()).unwrap_or(0);
-        if cnt == 0 {
-            return 0;
+        let mut speed_sum: u32 = 0;
+        for name in names {
+            if let Some(crab) = self.find_crabs_by_name(name).first() {
+                speed_sum += crab.speed();
+            }
         }
-        speed_values.iter().sum::<u32>() / cnt
+        let cnt = u32::try_from(names.len()).unwrap_or(0);
+        return if cnt == 0 {
+            0
+        } else {
+            speed_sum / cnt
+        }
     }
 }

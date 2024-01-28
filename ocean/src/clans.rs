@@ -1,10 +1,10 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use crate::crab::Crab;
 use std::rc::Rc;
 
 #[derive(Debug)]
 pub struct ClanSystem {
-    clans: HashMap<String, Vec<String>>
+    clans: HashMap<String, HashSet<String>>
 }
 
 impl ClanSystem {
@@ -17,7 +17,7 @@ impl ClanSystem {
      */
     pub fn get_clan_member_names(&self, clan_id: &str) -> Vec<String> {
         if let Some(names) = self.clans.get(clan_id) {
-            names.clone()
+            names.iter().map(|x| x.clone()).collect()
         } else {
             Vec::new()
         }
@@ -41,7 +41,7 @@ impl ClanSystem {
      * Returns the id of the clan with the most number of members, or None if such a clan does not exist.
      */
     pub fn get_largest_clan_id(&self) -> Option<String> {
-        if let Some(res) = self.clans.iter().max_by(|x, y| x.1.len().cmp(&y.1.len())) {
+        if let Some(res) = self.clans.iter().max_by_key(|x| x.1.len()) {
             Some(res.0.clone())
         } else {
             None
@@ -53,9 +53,11 @@ impl ClanSystem {
      */
     pub fn add_crab_name(&mut self, clan_id: &str, crab_name: String) {
         if let Some(crabs) = self.clans.get_mut(clan_id) {
-            crabs.push(crab_name);
+            crabs.insert(crab_name);
         } else {
-            self.clans.insert(clan_id.to_string(), vec![crab_name]);
+            let mut set = HashSet::new();
+            set.insert(crab_name);
+            self.clans.insert(clan_id.to_string(), set);
         }
     }
 }
